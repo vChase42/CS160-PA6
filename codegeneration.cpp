@@ -481,7 +481,23 @@ void CodeGenerator::visitMethodCallNode(MethodCallNode* node) {
     }else{
         methodName = node->identifier_1->name;
         className = currentClassName;
-        m = (*currentClassInfo.methods)[node->identifier_1->name];
+        if(currentClassInfo.methods->count(methodName) == 0){
+            std::string curr_class = className;
+            bool flag = true;
+            while(curr_class != ""){
+                ClassInfo c = (*classTable)[curr_class];
+                if(c.methods->count(methodName) != 0){
+                    className = curr_class;
+                    flag = false;
+                    m = (*(*classTable)[className].methods)[methodName];
+                    break;
+                }
+                curr_class = c.superClassName;
+            }
+
+        }else{
+            m = (*currentClassInfo.methods)[methodName];
+        }
         std::cout << "push 8(%ebp)" << std::endl;
 
     }
@@ -571,6 +587,9 @@ void CodeGenerator::visitNewNode(NewNode* node) {
     std::cout << "call malloc" << std::endl;
     std::cout << "add $4, %esp" << std::endl;
     if(c.methods->count(node->objectClassName)){
+        std::cout << "push %eax" << std::endl;
+        std::cout << "push %ecx" << std::endl;
+        std::cout << "push %edx" << std::endl;
         if(node->expression_list->size() > 0){
             std::list<ExpressionNode*>::iterator it = node->expression_list->end();
             while(true){
@@ -581,9 +600,13 @@ void CodeGenerator::visitNewNode(NewNode* node) {
         }
         std::cout << "push %eax" << std::endl;
         std::cout << "call " << node->objectClassName << "_" << node->objectClassName << std::endl;
-        std::cout << "add $" << node->expression_list->size()*4+4 << ", %esp" << std::endl;
+        std::cout << "pop %ebx" << std::endl;
+        std::cout << "add $" << node->expression_list->size()*4 << ", %esp" << std::endl;
+        std::cout << "pop %edx" << std::endl;
+        std::cout << "pop %ecx" << std::endl;
+        std::cout << "pop %eax" << std::endl;
     }
-    std::cout << "push %eax" << std::endl;
+    std::cout << "push %ebx" << std::endl;
         
 }
 

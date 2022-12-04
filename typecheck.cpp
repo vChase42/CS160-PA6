@@ -87,18 +87,36 @@ void TypeCheck::visitClassNode(ClassNode* node) {
   // WRITEME: Replace with code if necessary
 
   ClassInfo z;
+  z.methods = new MethodTable();
+  z.members = new VariableTable();
+  
   currentClassName = node->identifier_1->name;
   if(node->identifier_2){
     if(classTable->count(node->identifier_2->name) == 0) typeError(undefined_class);
     z.superClassName = node->identifier_2->name;
+
+    //CODE TO PUT ALL PARENT METHODS AND MEMBERS INTO CHILD CLASSs
+    ClassInfo parent = (*classTable)[z.superClassName];
+    
+    // MethodTable::iterator it;
+    // for (it = parent.methods->begin(); it != parent.methods->end(); it++)
+    // {
+    //   (*z.methods)[it->first] = it->second;
+    // }
+    VariableTable::iterator it2;
+    for (it2 = parent.members->begin(); it2 != parent.members->end(); it2++)
+    {
+      (*z.members)[it2->first] = it2->second;
+    }
+  z.membersSize = parent.membersSize;
+
+
   }else{
+    z.membersSize = 0;
     z.superClassName = "";
   }
 
 
-  
-  z.methods = new MethodTable();
-  z.members = new VariableTable();
   currentMethodTable = z.methods;
   currentVariableTable = z.members;
 
@@ -108,7 +126,7 @@ void TypeCheck::visitClassNode(ClassNode* node) {
   node->visit_children(this);
   //figure out declaration list here???
 
-  currentMemberOffset = 0;
+  currentMemberOffset = z.membersSize;
   if(node->declaration_list){
   for(auto x: *(node->declaration_list)){
     if(x->identifier_list){
@@ -118,7 +136,7 @@ void TypeCheck::visitClassNode(ClassNode* node) {
     }}
   }}
 
-  (*classTable)[currentClassName].membersSize = (*classTable)[currentClassName].members->size();
+  (*classTable)[currentClassName].membersSize = (*classTable)[currentClassName].members->size()*4;
   
   if(currentClassName == "Main"){
     //no members allowed
@@ -618,13 +636,26 @@ void TypeCheck::visitMethodCallNode(MethodCallNode* node) {
 
     methodName = node->identifier_1->name;
     if((*currentMethodTable).count(methodName) == 0){ //method doesnt exists
-      typeError(undefined_method);
+      //begin to check all the parent classes...........
+      std::string curr_class = currentClassName;
+      bool flag = true;
+      while(curr_class != ""){
+        ClassInfo c = (*classTable)[curr_class];
+        if(c.methods->count(methodName) != 0){
+          m = (*(*classTable)[curr_class].methods)[methodName];
+          flag = false;
+          break;
+        }
+        curr_class = c.superClassName;
+
+      }
+      if(flag) typeError(undefined_method);
+
     }else{ //method exists
       m = (*currentMethodTable)[methodName];
       
     }
   }
-
   node->basetype = m.returnType.baseType;
   node->objectClassName = m.returnType.objectClassName;
 
