@@ -79,8 +79,6 @@ void TypeCheck::visitProgramNode(ProgramNode* node) {
   node->visit_children(this);
 
   if(classTable->count("Main") == 0) typeError(no_main_class);
-
-
 }
 
 void TypeCheck::visitClassNode(ClassNode* node) {
@@ -138,6 +136,15 @@ void TypeCheck::visitClassNode(ClassNode* node) {
 
   (*classTable)[currentClassName].membersSize = (*classTable)[currentClassName].members->size()*4;
   
+
+  //PRINT
+  // VariableTable::iterator it2;
+  // for (it2 = z.members->begin(); it2 != z.members->end(); it2++)
+  // {
+  //   std::cout << it2->first << ": " << it2->second.offset << std::endl;
+  // }
+
+
   if(currentClassName == "Main"){
     //no members allowed
     if((*classTable)[currentClassName].membersSize > 0) typeError(main_class_members_present);
