@@ -43,7 +43,7 @@ void CodeGenerator::visitMethodNode(MethodNode* node) {
         std::cout << "#preamble" << std::endl;
         std::cout << "push %ebp" << std::endl;
         std::cout << "mov %esp, %ebp" << std::endl;
-        std::cout << "sub $32, %esp" << std::endl; 
+        std::cout << "sub $" << currentMethodInfo.localsSize*4 << ", %esp" << std::endl; 
         // %ebx, %esi, and %edi
         std::cout << "push %ebx" << std::endl;
         std::cout << "push %esi" << std::endl;
