@@ -582,15 +582,16 @@ void CodeGenerator::visitNewNode(NewNode* node) {
     // WRITEME: Replace with code if necessary
     ClassInfo c = (*classTable)[node->objectClassName];
 
+    std::cout << "push %ecx" << std::endl;
+    std::cout << "push %edi" << std::endl;
+    std::cout << "push %eax" << std::endl;
     
     std::cout << "push $" << c.membersSize << std::endl;
     std::cout << "call malloc" << std::endl;
     std::cout << "add $4, %esp" << std::endl;
+    std::cout << "mov %eax, %edi" << std::endl;
     if(c.methods->count(node->objectClassName)){
         // std::cout << "push %eax" << std::endl;
-        std::cout << "push %ecx" << std::endl;
-        std::cout << "push %edx" << std::endl;
-        std::cout << "mov %eax, %edi" << std::endl;
         if(node->expression_list->size() > 0){
             std::list<ExpressionNode*>::iterator it = node->expression_list->end();
             while(true){
@@ -603,9 +604,10 @@ void CodeGenerator::visitNewNode(NewNode* node) {
         std::cout << "call " << node->objectClassName << "_" << node->objectClassName << std::endl;
         std::cout << "pop %ebx" << std::endl;
         std::cout << "add $" << node->expression_list->size()*4 << ", %esp" << std::endl;
-        std::cout << "pop %edx" << std::endl;
+        
+        std::cout << "pop %eax" << std::endl;
+        std::cout << "pop %edi" << std::endl;
         std::cout << "pop %ecx" << std::endl;
-        // std::cout << "pop %eax" << std::endl;
     }
     std::cout << "push %ebx" << std::endl;
         
